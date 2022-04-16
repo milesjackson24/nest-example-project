@@ -24,13 +24,13 @@ export class UsersService {
     return await this.repo.find();
   }
 
-  async findOne(id: string): Promise<User[]> {
-    return await this.repo.find({ id });
+  async findOne(id: string): Promise<User> {
+    return await this.repo.findOne({ id });
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     await this.repo.update(id, updateUserDto);
-    return await this.repo.findOne({ id });
+    return await this.repo.findOne(id);
   }
 
   remove(id: string) {
