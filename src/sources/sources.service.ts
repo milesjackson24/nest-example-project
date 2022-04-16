@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateSourceDto } from './dto/create-source.dto';
-import { UpdateSourceDto } from './dto/update-source.dto';
 import { Source } from './entities/source.entity';
 
 @Injectable()
@@ -24,13 +23,9 @@ export class SourcesService {
     return await this.repo.find();
   }
 
-  // async findOne(id: string): Promise<Source> {
-  //   return await this.repo.findOne({ id });
-  // }
-
-  // update(id: number, updateSourceDto: UpdateSourceDto) {
-  //   return `This action updates a #${id} source`;
-  // }
+  async findOne(id: string): Promise<Source> {
+    return await this.repo.findOne({ id });
+  }
 
   remove(id: string): Promise<void> {
     this.repo.delete(id);
