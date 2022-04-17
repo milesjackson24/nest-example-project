@@ -11,7 +11,7 @@ export class Article {
   @ApiProperty({ example: "article 1" })
   title: string
 
-  @Column()
+  @Column({ length: 2500 })
   @ApiProperty({ example: "This is an article about..." })
   summary: string
   
