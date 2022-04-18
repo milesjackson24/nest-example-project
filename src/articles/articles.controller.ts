@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
@@ -11,7 +11,14 @@ export class ArticlesController {
 
   @Post()
   create(@Body() createArticleDto: CreateArticleDto) {
-    return this.articlesService.create(createArticleDto);
+    return this.articlesService.create(createArticleDto).catch((err) => {
+      throw new HttpException(
+        {
+          message: err.message,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    });
   }
 
   @Get()
