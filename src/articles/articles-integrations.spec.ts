@@ -1,16 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ArticlesController } from './articles.controller';
-import { ArticlesService } from './articles.service';
 import { Article } from './entities/article.entity';
 import { ArticlesModule } from './articles.module';
-import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { getRepository, Repository } from 'typeorm';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { CreateArticleDto } from './dto/create-article.dto';
 
 describe('ArticlesController', () => {
-  let service: ArticlesService;
   let repo: Repository<Article>;
   let app: INestApplication;
 
@@ -32,7 +29,6 @@ describe('ArticlesController', () => {
     title: "Test Article",
     summary: "This is a summary",
   }
-  
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -50,7 +46,6 @@ describe('ArticlesController', () => {
 
     app = module.createNestApplication();
     await app.init();
-    service = module.get<ArticlesService>(ArticlesService);
     repo = getRepository(Article);
   });
 
