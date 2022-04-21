@@ -8,7 +8,7 @@ import * as request from 'supertest';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 
-describe('ArticlesController', () => {
+describe('Articles', () => {
   let repo: Repository<Article>;
   let app: INestApplication;
 
