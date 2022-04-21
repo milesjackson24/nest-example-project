@@ -37,8 +37,24 @@ export class ArticlesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateArticleDto: UpdateArticleDto) {
-    return this.articlesService.update(id, updateArticleDto);
+  async update(@Param('id') id: string, @Body() updateArticleDto: UpdateArticleDto) {
+    const res = await this.articlesService.update(id, updateArticleDto).catch((err) => {
+      throw new HttpException(
+        {
+          message: err.message,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    });
+    if ( res === undefined ) {
+      throw new HttpException(
+        {message: "Article not found"},
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    else {
+      return res;
+    }
   }
 
   @Delete(':id')

@@ -6,6 +6,7 @@ import { getRepository, Repository } from 'typeorm';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { CreateArticleDto } from './dto/create-article.dto';
+import { UpdateArticleDto } from './dto/update-article.dto';
 
 describe('ArticlesController', () => {
   let repo: Repository<Article>;
@@ -18,7 +19,7 @@ describe('ArticlesController', () => {
     user_id: "b794cf10-fe44-42f1-b0d4-1da3ec10df20",
   };
   const targetId = "b794cf10-fe44-42f1-b0d4-1da3ec10dec4";
-  const incorrectId = "d874cf10-fe44-42f1-b0d4-1da3ec10dec0";
+  const invalidId = "d874cf10-fe44-42f1-b0d4-1da3ec10dec0";
   const targetIdArticle: CreateArticleDto = {
     title: "Test Article",
     summary: "This is a summary",
@@ -29,6 +30,12 @@ describe('ArticlesController', () => {
     title: "Test Article",
     summary: "This is a summary",
   }
+  const patchArticle: UpdateArticleDto = {
+    title: "New Article Title"
+  }
+  const invalidPatchArticle = {
+    invalidField: "New Article Title"
+  }
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -38,7 +45,8 @@ describe('ArticlesController', () => {
           type: "sqlite",
           database: ":memory:",
           entities: [Article],
-          logging: true,
+          // logging: true,
+          logging: false,
           synchronize: true,
         })
       ]
@@ -73,15 +81,14 @@ describe('ArticlesController', () => {
         .expect(HttpStatus.OK);
       const data = res.body;
       expect(data).toHaveLength(1);
-      expect(data[0].user_id).toBe(targetId);
+      expect(data[0].user_id).toEqual(targetId);
     });
     it('Status 200: invalid id returns no items', async () => {
       await repo.save([testArticle, targetIdArticle]);
       const res = await request(app.getHttpServer())
-        .get(`/articles/user/${incorrectId}`)
+        .get(`/articles/user/${invalidId}`)
         .expect(HttpStatus.OK);
       const data = res.body;
-      console.log(data)
       expect(data).toHaveLength(0);
     });
   });
@@ -107,7 +114,38 @@ describe('ArticlesController', () => {
     });
   });
   describe('PATCH', () => {
-
+    it('Status 200: succesful patch', async () => {
+      await repo.save([testArticle]);
+      const articles = await request(app.getHttpServer())
+        .get("/Articles")
+        .expect(HttpStatus.OK);
+      const id = articles.body[0].id;
+      const res = await request(app.getHttpServer())
+        .patch(`/Articles/${id}`)
+        .send(patchArticle)
+        .expect(HttpStatus.OK);
+      expect(res.body.title).toEqual(patchArticle.title);
+    });
+    it('Status 404: returns error message if id not found', async () => {
+      await repo.save([testArticle]);
+      const res = await request(app.getHttpServer())
+        .patch(`/Articles/${invalidId}`)
+        .send(patchArticle)
+        .expect(HttpStatus.NOT_FOUND);
+      expect(res.text).toEqual('{"message":"Article not found"}');
+    });
+    it('Status 400: patch with extra field results in bad request', async () => {
+      await repo.save([testArticle]);
+      const articles = await request(app.getHttpServer())
+        .get("/Articles")
+        .expect(HttpStatus.OK);
+      const id = articles.body[0].id;
+      const res = await request(app.getHttpServer())
+        .patch(`/Articles/${id}`)
+        .send(invalidPatchArticle)
+        .expect(HttpStatus.BAD_REQUEST);
+      expect(res.text).toEqual("{\"message\":\"No entity column \\\"invalidField\\\" was found.\"}");
+    });
   });
   describe('DELETE', () => {
     it('Status 200: deletes an article', async () => {
@@ -130,7 +168,7 @@ describe('ArticlesController', () => {
     it('Status 200: invalid id does not delete', async () => {
       await repo.save([testArticle]);
       await request(app.getHttpServer())
-        .delete(`/articles/${incorrectId}`)
+        .delete(`/articles/${invalidId}`)
         .expect(HttpStatus.OK);
       const res = await request(app.getHttpServer())
         .get("/articles")
